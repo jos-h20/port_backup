@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function rise_module_install() {
+  $menu = array();
+  $menu['menu_name'] = "rise-menu";
+  $menu['title'] = "Rise Menu";
+  $menu['description'] = "Menu for use with the Rise Drupal 7 theme.";
+  menu_save($menu);
+  
+  drupal_set_message('The rise module is enabled');
+}

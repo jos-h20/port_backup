@@ -1,0 +1,171 @@
+<?php
+
+/*
+ * Implements hook_form_alter
+ */
+function rise_module_form_alter(&$form, &$form_state, $form_id){
+  // Only execute on the "menu_edit_item" form for links in the Rise menu.
+  if ($form_id == 'menu_edit_item' && $form['original_item']['#value']['menu_name'] == 'rise-menu') {
+    // Custom version of _block_load_blocks(). 
+	  $query = db_select('block', 'b');
+	  $result = $query->fields('b')->condition('b.theme', 'rise')->condition('b.status', 1)->orderBy('b.region')->orderBy('b.weight')->orderBy('b.module')->addTag('block_load')->addTag('translatable')->execute();
+	  $block_info = $result->fetchAllAssoc('bid');
+	  $blocks = array();
+	  foreach ($block_info as $block) {
+	    $blocks[$block->region]["{$block->module}_{$block->delta}"] = $block;
+	  }
+	  // Set a default menu path if empty and hide the input field is "Enable Scroll-to" is checked.
+	  if (!$form['link_path']['#default_value']) {
+	    $form['link_path']['#default_value'] = '<front>';
+	  }
+	  
+    $form['link_path']['#states'] = array (
+      'invisible' => array(
+        'input[name="enable_rise_content_blocks"]' => array('checked' => TRUE)
+      )
+    );
+    // Checkbox form to enable the scroll-to.
+    $form['enable_rise_content_blocks'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable Scroll-to'),
+      '#default_value' => variable_get('menu-'.$form['mlid']['#value'].'-enable-gumby-goto', 0),
+      '#weight' => '-8'
+    );
+    // Add our custom form to select which block to assign menu item to.
+	  $form['rise_content_blocks'] = array(
+	    '#type' => 'select',
+      '#title' => t('Block Titles'),
+      '#description' => t('Select block to link to'),
+      '#default_value' => variable_get('menu-'.$form['mlid']['#value'].'-gumby-goto'),
+      '#options' => array(), // Defined afer this form.
+      '#states' => array (
+          'invisible' => array(
+            'input[name="enable_rise_content_blocks"]' => array('checked' => FALSE)
+          )
+        ),
+      '#weight' => '-7'
+	  );
+	  // Assigns a key/label representing each block in the 'rise_content_blocks' 
+	  // form select menu. 
+	  foreach ($blocks['front_content'] as $block) {
+	    // Checks if the block delta is numeric, which will indicate a custom block.
+	    if (!is_numeric($block->delta)) {
+	      // Sets the block delta as the key and the block module/delta as the label.
+        $form['rise_content_blocks']['#options'][$block->module.'_'.str_replace("-", "_", $block->delta)] = ''.ucfirst($block->module).' '. ucfirst($block->delta).'';     
+      }
+      else {
+        // Assigns the info as title for custom blocks.
+        $var = block_custom_block_get($block->delta);
+	      $form['rise_content_blocks']['#options'][$block->module.'_'.str_replace("-", "_", $block->delta)] = $var['info'];
+      }
+    }
+    
+    $form['#submit'][] = 'rise_module_menu_form_submit_handler';
+      
+  }
+
+  return $form;
+  
+}
+
+/*
+ * Submit handler for "menu_edit_item" form alter.
+ */
+function rise_module_menu_form_submit_handler($form, &$form_state) {
+  variable_set('menu-'.$form_state['values']['mlid'].'-gumby-goto',$form_state['values']['rise_content_blocks']);
+  variable_set('menu-'.$form_state['values']['mlid'].'-enable-gumby-goto',$form_state['values']['enable_rise_content_blocks']);
+}
+
+/**
+ * Implements hook_block_info.
+ */
+function rise_module_block_info() {
+  $blocks['rise_menu'] = array('info' => t('Rise Menu Module'));
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view.
+ */
+function rise_module_block_view($delta = '') {
+  global $user;
+  
+  $block['subject'] = t('Rise Menu');
+  $block['content'] = rise_module_block_content(); // 
+
+  return $block;
+}
+
+/**
+ * Callback function for rise_menu_block_view content.
+ */
+function rise_module_block_content() {
+  
+  $output = '<ul class="navigation">';
+  
+  foreach(menu_tree('rise-menu') as $key => $value):
+  
+    $block_id = variable_get('menu-'.$key.'-gumby-goto');
+	  $enable_scroll = variable_get('menu-'.$key.'-enable-gumby-goto');
+	  
+	  // If user provided path, fetch the alias.
+	  if (is_numeric($key) && $value['#href'] != '<front>') {
+	    $path = drupal_get_path_alias($value['#href']);  	  
+	  }
+	  
+	  else {
+		  $path = '';
+	  }
+ 
+    if (is_numeric($key)) {
+	    
+	    $output .= '<li>';
+	    
+	    if ($enable_scroll == '1') {
+	      $output .= '<a href="#block-'.str_replace("_", "-", $block_id).'" class="skip" data-goto="#block-'.str_replace("_", "-", $block_id).'" data-duration="800" data-offset="-50" data-update="">'.$value['#title'].'</a>';
+	    }
+	    
+	    if ($enable_scroll == '0') {
+	      $output .= '<a href="'.$path.'">'.$value['#title'].' </a>';
+	    }
+	    
+	    if ($value['#below'] != NULL) {
+	      $output .='<div class="dropdown">';
+	      $output .='<ul>';
+	      foreach($value['#below'] as $key_below => $value_below):
+	        $block_id_below = variable_get('menu-'.$key_below.'-gumby-goto');
+	        
+	        if (is_numeric($key_below) && $value_below['#href'] != '<front>') {
+	          // If user provided path, fetch the alias.
+				    $path_below = drupal_get_path_alias($value['#href']);  	  
+				  }
+				  
+				  else {
+					  $path_below = '';
+				  }
+	        
+	        if (is_numeric($key_below)) {
+				   
+				    $output .='<li>';
+				    if ($enable_scroll == '1') {
+				      $output .='<a href="#block-'.str_replace("_", "-", $block_id_below).'" class="skip" data-goto="#block-'.str_replace("_", "-", $block_id_below).'" data-duration="800" data-offset="-50" data-update="">'.$value_below['#title'].'</a>';
+				    }
+				    if ($enable_scroll == '0') {
+	            $output .= '<a href="'.$path_below.'">'.$value_below['#title'].' </a>';
+	          }
+				    $output .='</li>';
+				    
+		      }
+		      
+		    endforeach;
+		    $output .='</ul>';
+		    $output .='</div>';
+	    }
+	    $output .= '</li>';
+    }
+      
+  endforeach;
+  
+	$output .= '</ul>';
+	return $output;
+}

@@ -1,0 +1,4 @@
+name = Rise Module
+description = A helper module for the Rise Drupal theme.
+package = Other
+core = 7.x 

@@ -1,0 +1,31 @@
+name = Rise sub
+description = A sub-theme of Rise. 
+core = 7.x
+engine = phptemplate
+
+base theme = rise
+
+; Call style sheets.
+stylesheets[all][] = css/custom.css
+
+; Define theme regions.
+
+regions[site_navigation] = Site Navigation
+regions[blog_menu_left] = Blog Menu Left
+regions[blog_menu_right] = Blog Menu Right
+regions[before_content] = Before Content
+regions[content] = Content
+regions[after_content] = After Content
+regions[front_content] = Front Page Content
+regions[sidebar_left] = Sidebar Left
+regions[sidebar_right] = Sidebar Right
+regions[footer] = Footer
+
+; Define theme setting defaults.
+
+settings[color_scheme] = light
+settings[loader] = 1
+
+settings[meta_date] = 1
+settings[meta_author] = 1
+settings[meta_tags] = 1
