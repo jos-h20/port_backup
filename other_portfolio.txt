@@ -1,0 +1,15 @@
+Background
+I've had a variety of occupations throughout my life. Most recently, I've worked in road construction and fished commercially up in Alaska. The past few years, I've had free time to pursue travel and adventure. I'm excited about the opportunity to engage in the tech world and serve my clients by providing the best products available.
+
+Interests
+I enjoy a variety of outdoor activities. I like to whitewater and sea kayak, cross country and downhill ski, and do a little mountain biking.
+
+I also enjoy reading, writing, and learning photography. I took the photos on this page during my adventures.
+
+<h3><a href="https://github.com/jos-h20/meal_tracker_angular2">Meal Tracker-Angular2</a></h3>
+<h3><a href="https://github.com/jos-h20/message-board-ember">Grapple-Ember</a></h3>
+<h3><a href="https://github.com/jos-h20/hair_salon_php">Hair Salon-PHP</a></h3>
+<h3><a href="https://github.com/jos-h20/git_api_project_js">Git-Api-Project-Typescript</a></h3>
+<h3><a href="https://github.com/jos-h20/drupal-pdx-kayak">PDX-Kayak</a></h3>
+<h3><a href="https://github.com/jos-h20/crescendo_php">Crescendo-Team PHP</a></h3>
+<h3><a href="https://github.com/jos-h20/epicodus-hike-guide_javascript">H?KE-Team Javascript</a></h3>
