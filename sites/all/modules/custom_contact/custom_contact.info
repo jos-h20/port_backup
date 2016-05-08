@@ -1,0 +1,6 @@
+
+name = Custom Contact
+description = Update contact form to remove checkbox
+package = Custom Modules
+core = 7.x
+files[] = custom_contact.module
